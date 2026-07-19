@@ -6,12 +6,6 @@ import ComingSoonModal from './ComingSoonModal.jsx';
 
 export const SUBDOMAIN_APPS = [
   {
-    id: 'resources',
-    name: 'Resources',
-    subdomain: 'resources.arpansarkar.org',
-    blurb: 'Notes, revision sheets and the exact material Arpan used for NEET 2026.',
-  },
-  {
     id: 'cutoffs',
     name: 'Cutoffs',
     subdomain: 'cutoffs.arpansarkar.org',
@@ -49,6 +43,12 @@ export default function Navbar() {
               className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
             >
               Mentorship
+            </a>
+            <a
+              href="https://resources.arpansarkar.org"
+              className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
+            >
+              Resources
             </a>
             {SUBDOMAIN_APPS.map((app) => (
               <button
@@ -104,6 +104,12 @@ export default function Navbar() {
                 className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
               >
                 Mentorship
+              </a>
+              <a
+                href="https://resources.arpansarkar.org"
+                className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
+              >
+                Resources
               </a>
               {SUBDOMAIN_APPS.map((app) => (
                 <button

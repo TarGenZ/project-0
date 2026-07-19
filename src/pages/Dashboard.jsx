@@ -6,6 +6,7 @@ import PurchasesTable from '../components/dashboard/PurchasesTable.jsx';
 import AdminOrders from '../components/dashboard/AdminOrders.jsx';
 import AdminPlans from '../components/dashboard/AdminPlans.jsx';
 import AdminGroupSessions from '../components/dashboard/AdminGroupSessions.jsx';
+import AdminResources from '../components/dashboard/AdminResources.jsx';
 import AdminBlockedSlots from '../components/dashboard/AdminBlockedSlots.jsx';
 import AdminAllPurchases from '../components/dashboard/AdminAllPurchases.jsx';
 import OnboardingModal from '../components/dashboard/OnboardingModal.jsx';
@@ -39,6 +40,10 @@ const ADMIN_TAB_GROUPS = [
       { id: 'mentorship_blocked', label: 'Block Slots', Component: AdminBlockedSlots },
       { id: 'mentorship_purchases', label: 'All Purchases', Component: AdminAllPurchases },
     ],
+  },
+  {
+    group: 'Resources',
+    tabs: [{ id: 'resources_files', label: 'Files', Component: AdminResources }],
   },
 ];
 

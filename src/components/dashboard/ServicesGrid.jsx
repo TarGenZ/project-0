@@ -65,6 +65,47 @@ function MentorshipBox() {
   );
 }
 
+const RESOURCES_URL = 'https://resources.arpansarkar.org/dashboard';
+
+function ResourcesBox() {
+  const [state, setState] = useState({ loading: true, hasAccess: false });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setState({ loading: false, hasAccess: false });
+        return;
+      }
+      supabase.rpc('has_resource_access', { p_user_id: session.user.id }).then(({ data, error }) => {
+        setState({ loading: false, hasAccess: !error && !!data });
+      });
+    });
+  }, []);
+
+  return (
+    <a
+      href={RESOURCES_URL}
+      className="group flex flex-col rounded-2xl border border-line bg-panel p-5 transition hover:border-violet/50 hover:shadow-glow"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet/15 text-lavender">
+          <BookOpen size={18} />
+        </div>
+        <ArrowRight size={15} className="text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/60" />
+      </div>
+      <p className="mt-3 font-display text-sm font-semibold text-white">Resources</p>
+
+      {state.loading ? (
+        <div className="mt-2 h-8 animate-pulse rounded bg-line/40" />
+      ) : state.hasAccess ? (
+        <p className="mt-2 text-xs text-lavender">Notes, mind maps & NCERT PDFs — open library</p>
+      ) : (
+        <p className="mt-2 text-xs text-white/45">Notes, short notes, mind maps & NCERT PDFs</p>
+      )}
+    </a>
+  );
+}
+
 function ComingSoonBox({ label, icon: Icon, onClick }) {
   return (
     <button
@@ -94,7 +135,7 @@ export default function ServicesGrid() {
     <div className="relative">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <MentorshipBox />
-        <ComingSoonBox label="Resources" icon={BookOpen} onClick={() => showComingSoon('Resources')} />
+        <ResourcesBox />
         <ComingSoonBox label="Cutoffs" icon={BarChart3} onClick={() => showComingSoon('Cutoffs')} />
         <ComingSoonBox label="Counselling" icon={Users} onClick={() => showComingSoon('Counselling')} />
       </div>

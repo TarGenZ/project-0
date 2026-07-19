@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import PlanCard from '../components/plans/PlanCard.jsx';
@@ -7,6 +8,7 @@ import BackButton from '../components/BackButton.jsx';
 
 const PRODUCT_LABELS = {
   mentorship: 'Mentorship',
+  resources: 'Resources',
 };
 
 // `key: null` = show everything (All Plans, Combo Plans use is_bundle instead
@@ -15,16 +17,22 @@ const PRODUCT_LABELS = {
 const CATEGORIES = [
   { key: 'all', label: 'All Plans' },
   { key: 'mentorship', label: 'Mentorship', product: 'mentorship' },
-  { key: 'resources', label: 'Resources', product: 'resources', disabled: true },
+  { key: 'resources', label: 'Resources', product: 'resources' },
   { key: 'cutoffs', label: 'Cutoff Access', product: 'cutoffs', disabled: true },
   { key: 'counselling', label: 'Counselling', product: 'counselling', disabled: true },
   { key: 'combo', label: 'Combo Plans', bundleOnly: true },
 ];
 
 export default function Plans() {
+  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState('all');
+  // Deep-linkable via ?category=resources (e.g. from resources.arpansarkar.org's
+  // paywall) — falls back to "all" if the param is missing or unrecognised.
+  const [category, setCategory] = useState(() => {
+    const fromUrl = searchParams.get('category');
+    return CATEGORIES.some((c) => c.key === fromUrl && !c.disabled) ? fromUrl : 'all';
+  });
   const [search, setSearch] = useState('');
   const [comingSoon, setComingSoon] = useState(null);
 
