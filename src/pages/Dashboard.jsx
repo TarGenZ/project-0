@@ -10,6 +10,7 @@ import AdminCalendar from '../components/dashboard/AdminCalendar.jsx';
 import AdminGroupSessions from '../components/dashboard/AdminGroupSessions.jsx';
 import AdminResources from '../components/dashboard/AdminResources.jsx';
 import AdminFreeResources from '../components/dashboard/AdminFreeResources.jsx';
+import AdminAnswerKeys from '../components/dashboard/AdminAnswerKeys.jsx';
 import AdminBlockedSlots from '../components/dashboard/AdminBlockedSlots.jsx';
 import AdminAllPurchases from '../components/dashboard/AdminAllPurchases.jsx';
 import OnboardingModal from '../components/dashboard/OnboardingModal.jsx';
@@ -60,6 +61,10 @@ const ADMIN_TAB_GROUPS = [
       { id: 'resources_files', label: 'Files', Component: AdminResources },
       { id: 'resources_free', label: 'Free Resources', Component: AdminFreeResources },
     ],
+  },
+  {
+    group: 'Tools',
+    tabs: [{ id: 'tools_answer_keys', label: 'Answer Keys', Component: AdminAnswerKeys }],
   },
 ];
 

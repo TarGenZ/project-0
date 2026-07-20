@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import AuthButton from './AuthButton.jsx';
 import ComingSoonModal from './ComingSoonModal.jsx';
 
@@ -19,14 +20,35 @@ export const SUBDOMAIN_APPS = [
   },
 ];
 
+// Lightweight utilities — no subdomain, no auth, no full App treatment.
+// Add new tools here as they ship.
+export const TOOLS = [
+  {
+    id: 'neet-marks-calculator',
+    name: 'NEET Marks Calculator',
+    path: '/tools/neet-marks-calculator',
+  },
+];
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
+  const toolsRef = useRef(null);
 
   const openApp = (app) => {
     setMobileOpen(false);
     setActiveModal(app);
   };
+
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const onClickOutside = (e) => {
+      if (toolsRef.current && !toolsRef.current.contains(e.target)) setToolsOpen(false);
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [toolsOpen]);
 
   return (
     <>
@@ -59,6 +81,35 @@ export default function Navbar() {
                 {app.name}
               </button>
             ))}
+            <div className="relative" ref={toolsRef}>
+              <button
+                onClick={() => setToolsOpen((v) => !v)}
+                aria-expanded={toolsOpen}
+                className="flex items-center gap-1 rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
+              >
+                Tools
+                <ChevronDown size={14} className={`transition ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {toolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="absolute left-0 top-full mt-2 w-56 rounded-xl border border-line bg-panel p-1.5 shadow-glow"
+                >
+                  {TOOLS.map((tool) => (
+                    <Link
+                      key={tool.id}
+                      to={tool.path}
+                      onClick={() => setToolsOpen(false)}
+                      className="block rounded-lg px-3 py-2 text-sm text-white/70 transition hover:bg-base hover:text-white"
+                    >
+                      {tool.name}
+                    </Link>
+                  ))}
+                </motion.div>
+              )}
+            </div>
             <Link
               to="/free-resources"
               className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
@@ -125,6 +176,17 @@ export default function Navbar() {
                 >
                   {app.name}
                 </button>
+              ))}
+              <p className="mt-2 px-3 text-[11px] uppercase tracking-[0.15em] text-white/30">Tools</p>
+              {TOOLS.map((tool) => (
+                <Link
+                  key={tool.id}
+                  to={tool.path}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
+                >
+                  {tool.name}
+                </Link>
               ))}
               <Link
                 to="/free-resources"
