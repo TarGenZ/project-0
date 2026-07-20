@@ -42,6 +42,7 @@ export default function NeetMarksCalculator() {
   const [detecting, setDetecting] = useState(false);
   const [reviewResponses, setReviewResponses] = useState(null); // {qno: '1'-'4'} | null
   const [lowConfidence, setLowConfidence] = useState(new Set());
+  const [multiMarked, setMultiMarked] = useState(new Set());
 
   useEffect(() => {
     supabase
@@ -64,6 +65,7 @@ export default function NeetMarksCalculator() {
     setError(null);
     setReviewResponses(null);
     setLowConfidence(new Set());
+    setMultiMarked(new Set());
   };
 
   const switchMode = (next) => {
@@ -118,7 +120,7 @@ export default function NeetMarksCalculator() {
       });
 
       const { detectResponsesFromImage } = await import('../../lib/omrImageScoring.js');
-      const { responses, lowConfidence: low, warning } = await detectResponsesFromImage(imgEl);
+      const { responses, lowConfidence: low, multiMarked: multi, warning } = await detectResponsesFromImage(imgEl);
       URL.revokeObjectURL(objectUrl);
 
       if (warning === 'not_enough_marks' || warning === 'grid_fit_failed') {
@@ -131,6 +133,7 @@ export default function NeetMarksCalculator() {
 
       setReviewResponses(responses);
       setLowConfidence(new Set(low));
+      setMultiMarked(new Set(multi));
     } catch {
       setError("Couldn't process that photo — try a clearer image, or use CSV upload instead.");
     }
@@ -145,6 +148,12 @@ export default function NeetMarksCalculator() {
       return next;
     });
     setLowConfidence((prev) => {
+      if (!prev.has(qno)) return prev;
+      const next = new Set(prev);
+      next.delete(qno);
+      return next;
+    });
+    setMultiMarked((prev) => {
       if (!prev.has(qno)) return prev;
       const next = new Set(prev);
       next.delete(qno);
@@ -277,7 +286,10 @@ export default function NeetMarksCalculator() {
                 <p className="mt-1 text-xs text-white/45">
                   Automatic detection isn't perfect — review before scoring.
                   {lowConfidence.size > 0 && (
-                    <span className="text-amber"> {lowConfidence.size} question{lowConfidence.size === 1 ? '' : 's'} need a closer look (marked below).</span>
+                    <span className="text-amber"> {lowConfidence.size} question{lowConfidence.size === 1 ? '' : 's'} need a closer look.</span>
+                  )}
+                  {multiMarked.size > 0 && (
+                    <span className="text-red-400"> {multiMarked.size} question{multiMarked.size === 1 ? '' : 's'} had two bubbles marked — counted as incorrect unless you fix them below.</span>
                   )}
                 </p>
               </div>
@@ -287,16 +299,19 @@ export default function NeetMarksCalculator() {
               {Array.from({ length: TOTAL_QUESTIONS }, (_, i) => i + 1).map((qno) => {
                 const q = String(qno);
                 const flagged = lowConfidence.has(q);
+                const multi = multiMarked.has(q);
                 return (
                   <div
                     key={q}
                     className={`flex items-center justify-between gap-2 border-b border-line/60 px-3 py-1.5 last:border-b-0 ${
-                      flagged ? 'bg-amber/5' : ''
+                      multi ? 'bg-red-500/5' : flagged ? 'bg-amber/5' : ''
                     }`}
                   >
-                    <span className="flex w-14 items-center gap-1 text-xs text-white/50">
+                    <span className="flex w-24 items-center gap-1 text-xs text-white/50">
+                      {multi && <AlertTriangle size={11} className="text-red-400" />}
                       {flagged && <AlertTriangle size={11} className="text-amber" />}
                       Q{q}
+                      {multi && <span className="text-[10px] text-red-400">×2</span>}
                     </span>
                     <div className="flex gap-1">
                       {['1', '2', '3', '4'].map((opt) => (
@@ -351,6 +366,12 @@ export default function NeetMarksCalculator() {
                 <p className="text-[11px] text-white/40">Blank</p>
               </div>
             </div>
+            {result.dropped > 0 && (
+              <p className="mt-3 text-xs text-white/40">
+                {result.dropped} question{result.dropped === 1 ? '' : 's'} officially dropped by NTA — excluded
+                from scoring.
+              </p>
+            )}
             {result.incorrectQuestions.length > 0 && (
               <p className="mt-4 text-xs text-white/40">
                 Missed: {result.incorrectQuestions.join(', ')}
@@ -368,6 +389,10 @@ export default function NeetMarksCalculator() {
           <pre className="mt-3 overflow-x-auto rounded-lg border border-line bg-base p-3 text-[11px] text-lavender">
             {BOOKMARKLET_SNIPPET}
           </pre>
+          <p className="mt-3 text-xs text-white/40">
+            If a row shows "Drop" instead of an option, that question was officially cancelled by NTA — it's
+            excluded from your score entirely rather than scored as blank.
+          </p>
         </details>
 
         <p className="mt-6 text-xs text-white/25">

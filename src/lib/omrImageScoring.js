@@ -19,6 +19,8 @@
 // be guaranteed, the calling page MUST show a review/correct step before
 // scoring — never trust this output silently.
 
+import { MULTI_MARKED } from './omrScoring.js';
+
 const BLOCKS = [
   { startQ: 1, label: 'block0' },
   { startQ: 46, label: 'block1' },
@@ -93,10 +95,16 @@ function fitUniformGrid(clusterCenters, expectedCount) {
 
 /**
  * Runs bubble detection on an HTMLImageElement (already loaded).
- * Returns { responses: {qno: '1'-'4'}, lowConfidence: string[], warning?: string }.
+ * Returns:
+ *   - responses: {qno: '1'-'4' | MULTI_MARKED} — confident single marks,
+ *     plus MULTI_MARKED for questions where 2+ bubbles were darkened
+ *     (NTA scores these as incorrect outright — see omrScoring.js)
+ *   - lowConfidence: string[] of qnos with a faint/ambiguous single mark,
+ *     left out of `responses` entirely so they don't silently misscore
+ *   - multiMarked: string[] of qnos flagged MULTI_MARKED, for UI display
  * `responses` only includes questions the detector is reasonably confident
- * about; anything ambiguous is simply left out (treated as blank) AND
- * listed in `lowConfidence` so the caller can flag it for manual review.
+ * about (or clearly multi-marked); everything else the caller should treat
+ * as blank until the person reviews it.
  */
 export async function detectResponsesFromImage(imgEl) {
   const cv = await loadCv();
@@ -228,6 +236,8 @@ export async function detectResponsesFromImage(imgEl) {
   const sampleRadius = Math.max(4, optionPitch * 0.28);
   const responses = {};
   const lowConfidence = [];
+  const multiMarked = [];
+  const FILLED_THRESHOLD = 70; // empirically: blank ~15-30, filled ~190-230
 
   for (let b = 0; b < BLOCKS.length; b++) {
     for (let r = 0; r < ROWS_PER_BLOCK; r++) {
@@ -239,18 +249,20 @@ export async function detectResponsesFromImage(imgEl) {
         const mean = meanGrayAt(sampleMat, cv, cx, cy, sampleRadius);
         darkness.push(255 - mean); // higher = darker/more filled
       }
-      const maxD = Math.max(...darkness);
-      const sorted = [...darkness].sort((a, b2) => b2 - a);
-      const margin = sorted[0] - sorted[1];
-      const FILLED_THRESHOLD = 70; // empirically: blank ~20-40, filled ~110-180
-      const MARGIN_THRESHOLD = 30;
+      const filledOptions = darkness.reduce((count, d) => count + (d > FILLED_THRESHOLD ? 1 : 0), 0);
 
-      if (maxD > FILLED_THRESHOLD && margin > MARGIN_THRESHOLD) {
-        const idx = darkness.indexOf(maxD);
+      if (filledOptions === 1) {
+        const idx = darkness.indexOf(Math.max(...darkness));
         responses[qno] = String(idx + 1);
-      } else if (maxD > FILLED_THRESHOLD * 0.6) {
-        // Something was marked but not confidently — flag for review,
-        // leave unanswered so it doesn't silently misscore.
+      } else if (filledOptions >= 2) {
+        // Two or more bubbles darkened for the same question — NTA scores
+        // this as incorrect outright, never blank, regardless of whether
+        // one of the marks happens to be right.
+        responses[qno] = MULTI_MARKED;
+        multiMarked.push(qno);
+      } else if (Math.max(...darkness) > FILLED_THRESHOLD * 0.6) {
+        // Something faint was marked but not confidently — flag for
+        // review, leave unanswered so it doesn't silently misscore.
         lowConfidence.push(qno);
       }
     }
@@ -260,7 +272,7 @@ export async function detectResponsesFromImage(imgEl) {
   srcFull.delete();
   if (sampleMat !== grayFull) sampleMat.delete();
 
-  return { responses, lowConfidence };
+  return { responses, lowConfidence, multiMarked };
 }
 
 function meanGrayAt(mat, cv, cx, cy, radius) {

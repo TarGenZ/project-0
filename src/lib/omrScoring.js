@@ -2,11 +2,21 @@
 // Kept framework-free (plain functions, no React) so it's easy to unit-test
 // or reuse if a future tool needs the same "Qno,Answer" CSV shape.
 
+// Sentinel response values with special scoring treatment (see
+// scoreResponses below) — not real option numbers.
+export const DROPPED = 'DROPPED'; // NTA officially cancelled the question
+export const MULTI_MARKED = 'MULTI_MARKED'; // two or more bubbles marked
+
 /**
  * Parses a "Qno,Answer" CSV (optionally with a header row) into a
  * { [qno: string]: string } map. Blank / '-' responses are dropped (treated
  * as unattempted). This matches the format produced by the NEET OMR-portal
  * bookmarklet in this tool's README.
+ *
+ * A response of "Drop" (any case) means NTA officially cancelled that
+ * question for everyone — the portal shows this instead of a recorded
+ * option. It's preserved as the DROPPED sentinel so scoring can award it
+ * zero marks either way, rather than being silently discarded as blank.
  */
 export function parseResponseCsv(text) {
   const responses = {};
@@ -18,7 +28,11 @@ export function parseResponseCsv(text) {
     const qno = String(Number(rawQ));
     if (!Number.isFinite(Number(qno))) continue;
     const ans = (rawA ?? '').trim();
-    if (ans && ans !== '-') responses[qno] = ans;
+    if (/^drop(ped)?$/i.test(ans)) {
+      responses[qno] = DROPPED;
+    } else if (ans && ans !== '-') {
+      responses[qno] = ans;
+    }
   }
 
   return responses;
@@ -28,7 +42,10 @@ export function parseResponseCsv(text) {
  * Scores a parsed response map against an answer_keys row's `key` jsonb
  * ({ [qno]: string[] of accepted options }), using that row's marking
  * scheme. Handles multi-correct questions (any accepted option scores full
- * marks) and blank/unattempted questions (0 marks).
+ * marks), blank/unattempted questions (0 marks), officially-dropped
+ * questions (0 marks either way — see DROPPED), and multi-marked bubbles
+ * (always scored as incorrect, regardless of whether one of the marked
+ * options was correct — see MULTI_MARKED).
  */
 export function scoreResponses(responses, answerKey) {
   const key = answerKey.key || {};
@@ -38,6 +55,7 @@ export function scoreResponses(responses, answerKey) {
   let correct = 0;
   let incorrect = 0;
   let blank = 0;
+  let dropped = 0;
   const incorrectQuestions = [];
 
   const allQuestions = Object.keys(key).sort((a, b) => Number(a) - Number(b));
@@ -46,6 +64,15 @@ export function scoreResponses(responses, answerKey) {
     const given = responses[qno];
     const accepted = key[qno] || [];
 
+    if (given === DROPPED) {
+      dropped += 1;
+      continue;
+    }
+    if (given === MULTI_MARKED) {
+      incorrect += 1;
+      incorrectQuestions.push(qno);
+      continue;
+    }
     if (!given) {
       blank += 1;
       continue;
@@ -65,6 +92,7 @@ export function scoreResponses(responses, answerKey) {
     correct,
     incorrect,
     blank,
+    dropped,
     total: allQuestions.length,
     incorrectQuestions,
     marksCorrect,
