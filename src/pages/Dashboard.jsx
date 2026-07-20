@@ -3,10 +3,13 @@ import { useAuth } from '../auth/useAuth';
 import ScoreCard from '../components/dashboard/ScoreCard.jsx';
 import ServicesGrid from '../components/dashboard/ServicesGrid.jsx';
 import PurchasesTable from '../components/dashboard/PurchasesTable.jsx';
+import AdminOverview from '../components/dashboard/AdminOverview.jsx';
 import AdminOrders from '../components/dashboard/AdminOrders.jsx';
 import AdminPlans from '../components/dashboard/AdminPlans.jsx';
+import AdminCalendar from '../components/dashboard/AdminCalendar.jsx';
 import AdminGroupSessions from '../components/dashboard/AdminGroupSessions.jsx';
 import AdminResources from '../components/dashboard/AdminResources.jsx';
+import AdminFreeResources from '../components/dashboard/AdminFreeResources.jsx';
 import AdminBlockedSlots from '../components/dashboard/AdminBlockedSlots.jsx';
 import AdminAllPurchases from '../components/dashboard/AdminAllPurchases.jsx';
 import OnboardingModal from '../components/dashboard/OnboardingModal.jsx';
@@ -17,6 +20,10 @@ import SEO from '../components/SEO.jsx';
 // project-1 (mentorship) and any future project-N subdomain never render
 // their own admin UI; their dashboards are student/user-facing only.
 //
+// 'overview' is pinned outside the groups below — it's the landing tab and
+// always renders first, answering "does anything need me right now?" with
+// links straight into whichever tab can act on it (AdminOverview.jsx).
+//
 // To add a new app's admin tools once project-2, project-3, etc. exist:
 //   1. Copy its Admin*.jsx components into src/components/dashboard/ here
 //      (same pattern as AdminGroupSessions/AdminBlockedSlots/AdminAllPurchases
@@ -25,6 +32,8 @@ import SEO from '../components/SEO.jsx';
 //   2. Add one entry to ADMIN_TAB_GROUPS below.
 // That's it — no changes needed in the subdomain app itself beyond removing
 // any admin UI it used to have.
+const OVERVIEW_TAB = { id: 'overview', label: 'Overview', Component: AdminOverview };
+
 const ADMIN_TAB_GROUPS = [
   {
     group: 'Homepage',
@@ -34,20 +43,27 @@ const ADMIN_TAB_GROUPS = [
     ],
   },
   {
-    group: 'Mentorship',
+    group: 'Schedule',
     tabs: [
+      { id: 'schedule_calendar', label: 'Calendar', Component: AdminCalendar },
       { id: 'mentorship_group', label: 'Group Sessions', Component: AdminGroupSessions },
       { id: 'mentorship_blocked', label: 'Block Slots', Component: AdminBlockedSlots },
-      { id: 'mentorship_purchases', label: 'All Purchases', Component: AdminAllPurchases },
     ],
   },
   {
+    group: 'Mentorship',
+    tabs: [{ id: 'mentorship_purchases', label: 'All Purchases', Component: AdminAllPurchases }],
+  },
+  {
     group: 'Resources',
-    tabs: [{ id: 'resources_files', label: 'Files', Component: AdminResources }],
+    tabs: [
+      { id: 'resources_files', label: 'Files', Component: AdminResources },
+      { id: 'resources_free', label: 'Free Resources', Component: AdminFreeResources },
+    ],
   },
 ];
 
-const ALL_ADMIN_TABS = ADMIN_TAB_GROUPS.flatMap((g) => g.tabs);
+const ALL_ADMIN_TABS = [OVERVIEW_TAB, ...ADMIN_TAB_GROUPS.flatMap((g) => g.tabs)];
 
 // Auth is already resolved by the time this renders — App.jsx wraps this
 // route in <ProtectedRoute>, so we only ever get here with a session and a
@@ -100,6 +116,17 @@ export default function Dashboard() {
           {isAdmin ? (
             <div>
               <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <button
+                  onClick={() => selectAdminTab(OVERVIEW_TAB.id)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                    adminTab === OVERVIEW_TAB.id
+                      ? 'bg-violet text-white'
+                      : 'border border-violet/40 text-lavender hover:text-white'
+                  }`}
+                >
+                  {OVERVIEW_TAB.label}
+                </button>
+                <div className="h-4 w-px bg-line" />
                 {ADMIN_TAB_GROUPS.map((g) => (
                   <div key={g.group} className="flex items-center gap-2">
                     <span className="text-[11px] font-medium uppercase tracking-wider text-white/30">
@@ -123,7 +150,9 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-              {ActiveAdminComponent && <ActiveAdminComponent />}
+              {ActiveAdminComponent && (
+                <ActiveAdminComponent {...(adminTab === OVERVIEW_TAB.id ? { onNavigate: selectAdminTab } : {})} />
+              )}
             </div>
           ) : (
             <div className="space-y-10">

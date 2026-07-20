@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, Pencil, X, Check, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
-// Notes / Short Notes / Mind Maps / Latest NCERT PDFs — see resource_files
-// migration for the section check constraint.
+// Notes / Short Notes / Mind Maps — see resource_files migration for the
+// section check constraint. "Latest NCERT PDFs" used to be a section here
+// too, but rehosting NCERT's copyrighted PDFs behind a paywall is a real
+// infringement risk, so that content moved to the free, link-only
+// /free-resources page instead (see AdminFreeResources.jsx) — it links
+// straight to NCERT's own official PDFs rather than storing copies.
 const SECTIONS = [
   { key: 'notes', label: 'Notes' },
   { key: 'short_notes', label: 'Short Notes' },
   { key: 'mind_maps', label: 'Mind Maps' },
-  { key: 'ncert', label: 'Latest NCERT PDFs' },
 ];
 
 const CLASS_LEVELS = [

@@ -60,6 +60,12 @@ export default function Navbar() {
               </button>
             ))}
             <Link
+              to="/free-resources"
+              className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
+            >
+              Free Resources
+            </Link>
+            <Link
               to="/plans"
               className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
             >
@@ -120,6 +126,13 @@ export default function Navbar() {
                   {app.name}
                 </button>
               ))}
+              <Link
+                to="/free-resources"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
+              >
+                Free Resources
+              </Link>
               <Link
                 to="/plans"
                 onClick={() => setMobileOpen(false)}

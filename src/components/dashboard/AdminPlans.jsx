@@ -33,6 +33,16 @@ function toLocalInputValue(iso) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Resource-pass plans don't need scheduling at all (no Zoom, no capacity
+// pooling) — they're pure time-bound access passes gated by
+// has_resource_access() on the resources app. schedule_type is NOT NULL
+// with a 3-value check constraint in the DB (pick_date/pick_weekly/
+// admin_sets), so we can't add a real "n/a" value without a migration;
+// 'admin_sets' + is_group=false is the one combination capacity.js's
+// pooling logic (api/_lib/capacity.js) always treats as uncapped, so it's
+// the safe default to force under the hood for this product.
+const NON_SCHEDULED_PRODUCTS = ['resources'];
+
 export default function AdminPlans() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,6 +139,8 @@ export default function AdminPlans() {
         throw new Error('Select at least one plan to include in the bundle.');
       }
 
+      const isNonScheduled = !form.is_bundle && NON_SCHEDULED_PRODUCTS.includes(form.product);
+
       const payload = {
         product: form.product,
         plan_key: form.plan_key.trim(),
@@ -143,15 +155,17 @@ export default function AdminPlans() {
         billing_period: form.billing_period,
         duration_days: form.duration_days ? Number(form.duration_days) : null,
         fixed_expiry_date: form.fixed_expiry_date ? new Date(`${form.fixed_expiry_date}T23:59:59`).toISOString() : null,
-        schedule_type: form.schedule_type,
-        is_group: form.is_group,
+        // Non-scheduled products (resources) are always forced to
+        // admin_sets/is_group=false — see NON_SCHEDULED_PRODUCTS note above.
+        schedule_type: isNonScheduled ? 'admin_sets' : form.schedule_type,
+        is_group: isNonScheduled ? false : form.is_group,
         max_redemptions: form.max_redemptions ? Number(form.max_redemptions) : null,
         available_from: form.available_from ? new Date(form.available_from).toISOString() : null,
         available_to: form.available_to ? new Date(form.available_to).toISOString() : null,
         is_bundle: form.is_bundle,
         bundle_plan_keys: form.is_bundle ? form.bundle_plan_keys : null,
-        capacity: form.capacity ? Number(form.capacity) : null,
-        min_enrollment: form.min_enrollment ? Number(form.min_enrollment) : null,
+        capacity: isNonScheduled ? null : form.capacity ? Number(form.capacity) : null,
+        min_enrollment: isNonScheduled ? null : form.min_enrollment ? Number(form.min_enrollment) : null,
         yearly_plan_key: form.billing_period === 'monthly' && form.yearly_plan_key ? form.yearly_plan_key : null,
       };
 
@@ -208,7 +222,7 @@ export default function AdminPlans() {
             {isEditing ? `Editing "${form.name || form.plan_key}"` : 'Create a new plan'}
           </div>
           <div className="flex items-center gap-2">
-            {!isEditing && (
+            {!isEditing && form.product === 'mentorship' && (
               <button
                 type="button"
                 onClick={applyFreeSessionPreset}
@@ -260,6 +274,7 @@ export default function AdminPlans() {
               className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white"
             >
               <option value="mentorship">Mentorship</option>
+              <option value="resources">Resources</option>
               {form.is_bundle && <option value="bundle">Bundle (mixed)</option>}
             </select>
           </Field>
@@ -359,7 +374,7 @@ export default function AdminPlans() {
               <p className="mt-1 text-[11px] text-amber">Overrides "valid for X days" above — everyone who buys this expires on this date.</p>
             )}
           </Field>
-          {!form.is_bundle && (
+          {!form.is_bundle && !NON_SCHEDULED_PRODUCTS.includes(form.product) && (
             <>
               <Field label="Scheduling">
                 <select
@@ -386,6 +401,12 @@ export default function AdminPlans() {
               </div>
             </>
           )}
+          {NON_SCHEDULED_PRODUCTS.includes(form.product) && !form.is_bundle && (
+            <p className="rounded-lg border border-line bg-base px-3 py-2 text-xs text-white/40 sm:col-span-2 lg:col-span-3">
+              Resource passes are plain time-bound access — no Zoom, no date-picking, no capacity.
+              Set price and validity above; students unlock the Resources library the moment they buy.
+            </p>
+          )}
           <Field label="Max free claims (blank = unlimited)">
             <input
               type="number"
@@ -411,35 +432,39 @@ export default function AdminPlans() {
               className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white"
             />
           </Field>
-          <Field label="Capacity (blank = uncapped)">
-            <input
-              type="number"
-              min="1"
-              value={form.capacity}
-              onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))}
-              placeholder="e.g. 7, 14, 50"
-              className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
-            />
-            <p className="mt-1 text-[11px] text-white/35">
-              Personal one-time/weekly: shared pool across every plan with the same scheduling type.
-              Group monthly/yearly: shared pool across all group cohort plans. Group one-time: per-batch
-              cap (set per batch in Group Sessions — this is just the default).
+          {!NON_SCHEDULED_PRODUCTS.includes(form.product) && (
+            <>
+              <Field label="Capacity (blank = uncapped)">
+                <input
+                  type="number"
+                  min="1"
+                  value={form.capacity}
+                  onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))}
+                  placeholder="e.g. 7, 14, 50"
+                  className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
+                />
+                <p className="mt-1 text-[11px] text-white/35">
+                  Personal one-time/weekly: shared pool across every plan with the same scheduling type.
+                  Group monthly/yearly: shared pool across all group cohort plans. Group one-time: per-batch
+                  cap (set per batch in Group Sessions — this is just the default).
+                </p>
+              </Field>
+              <Field label="Min. enrollment to start (group cohorts only, blank = no threshold)">
+                <input
+                  type="number"
+                  min="1"
+                  value={form.min_enrollment}
+                  onChange={(e) => setForm((f) => ({ ...f, min_enrollment: e.target.value }))}
+                  placeholder="e.g. 20"
+                  className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
+                />
+                <p className="mt-1 text-[11px] text-white/35">
+                  Shown to buyers as "X/N joined — starts once N enroll." Doesn't block purchases past this
+                  number, only gates the batch actually starting.
             </p>
           </Field>
-          <Field label="Min. enrollment to start (group cohorts only, blank = no threshold)">
-            <input
-              type="number"
-              min="1"
-              value={form.min_enrollment}
-              onChange={(e) => setForm((f) => ({ ...f, min_enrollment: e.target.value }))}
-              placeholder="e.g. 20"
-              className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
-            />
-            <p className="mt-1 text-[11px] text-white/35">
-              Shown to buyers as "X/N joined — starts once N enroll." Doesn't block purchases past this
-              number, only gates the batch actually starting.
-            </p>
-          </Field>
+            </>
+          )}
         </div>
 
         <Field label="Features (one per line)">
@@ -522,7 +547,8 @@ export default function AdminPlans() {
                       (was ₹{(p.compare_at_price_paise / 100).toLocaleString('en-IN')})
                     </span>
                   )}{' '}
-                  · {p.billing_period} · {p.schedule_type}
+                  · {p.billing_period}
+                  {!NON_SCHEDULED_PRODUCTS.includes(p.product) ? ` · ${p.schedule_type}` : ''}
                   {p.max_redemptions ? ` · max ${p.max_redemptions} claims` : ''}
                   {p.fixed_expiry_date
                     ? ` · expires ${new Date(p.fixed_expiry_date).toLocaleDateString('en-IN')}`
@@ -531,8 +557,8 @@ export default function AdminPlans() {
                       : ''}
                   {p.available_from && ` · from ${new Date(p.available_from).toLocaleDateString('en-IN')}`}
                   {p.available_to && ` · until ${new Date(p.available_to).toLocaleDateString('en-IN')}`}
-                  {p.capacity ? ` · cap ${p.capacity}` : ''}
-                  {p.min_enrollment ? ` · min ${p.min_enrollment} to start` : ''}
+                  {!NON_SCHEDULED_PRODUCTS.includes(p.product) && p.capacity ? ` · cap ${p.capacity}` : ''}
+                  {!NON_SCHEDULED_PRODUCTS.includes(p.product) && p.min_enrollment ? ` · min ${p.min_enrollment} to start` : ''}
                   {p.yearly_plan_key ? ` · linked to yearly plan` : ''}
                 </div>
               </div>

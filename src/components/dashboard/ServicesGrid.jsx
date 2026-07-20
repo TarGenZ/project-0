@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { GraduationCap, BookOpen, BarChart3, Users, ArrowRight, Clock } from 'lucide-react';
+import { GraduationCap, BookOpen, BarChart3, Users, ArrowRight, Clock, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { DAYS, SLOT_LABELS } from '../../lib/mentorshipLabels';
 
@@ -98,11 +99,29 @@ function ResourcesBox() {
       {state.loading ? (
         <div className="mt-2 h-8 animate-pulse rounded bg-line/40" />
       ) : state.hasAccess ? (
-        <p className="mt-2 text-xs text-lavender">Notes, mind maps & NCERT PDFs — open library</p>
+        <p className="mt-2 text-xs text-lavender">Notes & mind maps — open library</p>
       ) : (
-        <p className="mt-2 text-xs text-white/45">Notes, short notes, mind maps & NCERT PDFs</p>
+        <p className="mt-2 text-xs text-white/45">Notes, short notes & mind maps</p>
       )}
     </a>
+  );
+}
+
+function FreeResourcesBox() {
+  return (
+    <Link
+      to="/free-resources"
+      className="group flex flex-col rounded-2xl border border-line bg-panel p-5 transition hover:border-violet/50 hover:shadow-glow"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber/15 text-amber">
+          <FileText size={18} />
+        </div>
+        <ArrowRight size={15} className="text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/60" />
+      </div>
+      <p className="mt-3 font-display text-sm font-semibold text-white">Free Resources</p>
+      <p className="mt-2 text-xs text-white/45">NCERT PDFs — free for everyone, no account needed</p>
+    </Link>
   );
 }
 
@@ -136,6 +155,7 @@ export default function ServicesGrid() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <MentorshipBox />
         <ResourcesBox />
+        <FreeResourcesBox />
         <ComingSoonBox label="Cutoffs" icon={BarChart3} onClick={() => showComingSoon('Cutoffs')} />
         <ComingSoonBox label="Counselling" icon={Users} onClick={() => showComingSoon('Counselling')} />
       </div>

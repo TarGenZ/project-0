@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Link2, Check, X, Users } from 'lucide-react';
+import { Plus, Trash2, Link2, Check, X, Users, Video, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { SLOT_LABELS } from '../../lib/mentorshipLabels';
 
@@ -15,6 +15,7 @@ export default function AdminGroupSessions() {
   const [editingId, setEditingId] = useState(null);
   const [editLink, setEditLink] = useState('');
   const [savingLink, setSavingLink] = useState(false);
+  const [creatingZoom, setCreatingZoom] = useState(false);
 
   const selectedPlan = groupPlans.find((p) => p.plan_key === form.plan_key);
   const isRecurringCohort = selectedPlan && (selectedPlan.billing_period === 'monthly' || selectedPlan.billing_period === 'yearly');
@@ -85,6 +86,36 @@ export default function AdminGroupSessions() {
       setForm((f) => ({ ...f, session_date: '', zoom_link: '', notes: '' }));
     }
     setSaving(false);
+  };
+
+  const createZoomForForm = async () => {
+    if (!form.session_date || !form.session_slot) {
+      setError('Pick a date and time first, then create the Zoom meeting.');
+      return;
+    }
+    setError(null);
+    setCreatingZoom(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch('/api/create-zoom-meeting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          session_date: form.session_date,
+          session_slot: form.session_slot,
+          topic: `${planName(form.plan_key)} — ${form.session_date}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not create the Zoom meeting.');
+      setForm((f) => ({ ...f, zoom_link: data.join_url }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreatingZoom(false);
+    }
   };
 
   const remove = async (id) => {
@@ -211,14 +242,30 @@ export default function AdminGroupSessions() {
                 />
               </div>
               <div className="sm:col-span-2 lg:col-span-4">
-                <label className="mb-1 block text-xs text-white/45">Zoom link (optional now, can add later)</label>
-                <input
-                  type="url"
-                  placeholder="https://zoom.us/j/..."
-                  value={form.zoom_link}
-                  onChange={(e) => setForm((f) => ({ ...f, zoom_link: e.target.value }))}
-                  className="w-full rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
-                />
+                <label className="mb-1 block text-xs text-white/45">Zoom link</label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="https://zoom.us/j/... (or auto-create one →)"
+                    value={form.zoom_link}
+                    onChange={(e) => setForm((f) => ({ ...f, zoom_link: e.target.value }))}
+                    className="flex-1 rounded-lg border border-line bg-base px-3 py-2 text-sm text-white placeholder:text-white/25"
+                  />
+                  <button
+                    type="button"
+                    onClick={createZoomForForm}
+                    disabled={creatingZoom}
+                    title="Create a Zoom meeting for this date/time automatically"
+                    className="flex shrink-0 items-center gap-1.5 rounded-lg border border-violet/40 px-3 py-2 text-xs font-medium text-lavender transition hover:bg-violet/10 disabled:opacity-50"
+                  >
+                    {creatingZoom ? <Loader2 size={13} className="animate-spin" /> : <Video size={13} />}
+                    {creatingZoom ? 'Creating…' : 'Auto-create'}
+                  </button>
+                </div>
+                <p className="mt-1 text-[11px] text-white/35">
+                  Auto-create schedules a real Zoom meeting under your account for this exact date/time — or paste
+                  your own recurring room link instead if you'd rather reuse one.
+                </p>
               </div>
             </div>
             {error && <p className="mt-2 text-xs text-red-400">{error}</p>}

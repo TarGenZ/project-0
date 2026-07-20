@@ -15,6 +15,7 @@ const ResetPassword = lazy(() => import('./auth/pages/ResetPassword.jsx'));
 const AuthCallback = lazy(() => import('./auth/pages/AuthCallback.jsx'));
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Plans = lazy(() => import('./pages/Plans.jsx'));
+const FreeResources = lazy(() => import('./pages/FreeResources.jsx'));
 const Privacy = lazy(() => import('./pages/legal/Privacy.jsx'));
 const Terms = lazy(() => import('./pages/legal/Terms.jsx'));
 const RefundPolicy = lazy(() => import('./pages/legal/RefundPolicy.jsx'));
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route path="/plans" element={<Plans />} />
+          <Route path="/free-resources" element={<FreeResources />} />
 
           <Route
             path="/dashboard"

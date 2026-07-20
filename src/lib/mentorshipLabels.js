@@ -20,3 +20,25 @@ export const SLOT_LABELS = {
   '18:00': '6:00 – 6:30 PM',
   '18:30': '6:30 – 7:00 PM',
 };
+
+// Start/end (24h, IST — Asia/Kolkata, UTC+5:30) for every CURRENT slot key,
+// used to build real Date objects for Zoom scheduling and "add to
+// calendar" links. Legacy keys aren't listed since they're display-only.
+export const SLOT_TIMES = {
+  '22:00': { start: '22:00', end: '22:30' },
+  '21:00': { start: '21:00', end: '21:30' },
+  '21:30': { start: '21:30', end: '22:00' },
+  '19:00': { start: '19:00', end: '19:40' },
+};
+
+// Combines a "YYYY-MM-DD" date string with a slot key into real Date
+// objects, anchored to IST regardless of the browser/server's own
+// timezone. Returns null if the slot key has no known time (legacy slot).
+export function slotToDateRange(dateStr, slotKey) {
+  const t = SLOT_TIMES[slotKey];
+  if (!t || !dateStr) return null;
+  return {
+    start: new Date(`${dateStr}T${t.start}:00+05:30`),
+    end: new Date(`${dateStr}T${t.end}:00+05:30`),
+  };
+}
