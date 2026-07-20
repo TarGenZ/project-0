@@ -120,7 +120,13 @@ export default function NeetMarksCalculator() {
       });
 
       const { detectResponsesFromImage } = await import('../../lib/omrImageScoring.js');
-      const { responses, lowConfidence: low, multiMarked: multi, warning } = await detectResponsesFromImage(imgEl);
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('detection_timeout')), 30000)
+      );
+      const { responses, lowConfidence: low, multiMarked: multi, warning } = await Promise.race([
+        detectResponsesFromImage(imgEl),
+        timeout,
+      ]);
       URL.revokeObjectURL(objectUrl);
 
       if (warning === 'not_enough_marks' || warning === 'grid_fit_failed') {
@@ -134,8 +140,12 @@ export default function NeetMarksCalculator() {
       setReviewResponses(responses);
       setLowConfidence(new Set(low));
       setMultiMarked(new Set(multi));
-    } catch {
-      setError("Couldn't process that photo — try a clearer image, or use CSV upload instead.");
+    } catch (err) {
+      setError(
+        err?.message === 'detection_timeout'
+          ? 'That took too long — check your connection and try again, or use CSV upload instead.'
+          : "Couldn't process that photo — try a clearer image, or use CSV upload instead."
+      );
     }
     setDetecting(false);
   };

@@ -33,12 +33,21 @@ const OPTIONS_PER_ROW = 4;
 let cvPromise = null;
 function loadCv() {
   if (!cvPromise) {
-    cvPromise = import('@techstark/opencv-js').then((mod) => {
-      const cv = mod.default || mod;
-      if (cv.getBuildInformation) return cv;
-      return new Promise((resolve) => {
-        cv.onRuntimeInitialized = () => resolve(cv);
+    cvPromise = import('@techstark/opencv-js').then(async (mod) => {
+      const cvModule = mod.default || mod;
+      // @techstark/opencv-js can hand back readiness in any of three
+      // shapes depending on version/build — the package's own docs say
+      // to check all three, in this order, rather than assume one.
+      if (cvModule instanceof Promise) {
+        return await cvModule;
+      }
+      if (cvModule.Mat) {
+        return cvModule;
+      }
+      await new Promise((resolve) => {
+        cvModule.onRuntimeInitialized = () => resolve();
       });
+      return cvModule;
     });
   }
   return cvPromise;
