@@ -20,15 +20,7 @@
 // scoring — never trust this output silently.
 
 import { MULTI_MARKED } from './omrScoring.js';
-
-const BLOCKS = [
-  { startQ: 1, label: 'block0' },
-  { startQ: 46, label: 'block1' },
-  { startQ: 91, label: 'block2' },
-  { startQ: 136, label: 'block3' },
-];
-const ROWS_PER_BLOCK = 45;
-const OPTIONS_PER_ROW = 4;
+import { BLOCKS, ROWS_PER_BLOCK, OPTIONS_PER_ROW, FILLED_THRESHOLD, LOW_CONFIDENCE_RATIO } from './omrGridConstants.js';
 
 let cvPromise = null;
 function loadCv() {
@@ -111,6 +103,10 @@ function fitUniformGrid(clusterCenters, expectedCount) {
  *   - lowConfidence: string[] of qnos with a faint/ambiguous single mark,
  *     left out of `responses` entirely so they don't silently misscore
  *   - multiMarked: string[] of qnos flagged MULTI_MARKED, for UI display
+ *   - positions: {qno: {fx, fy}} — fractional (0-1) coordinates of each
+ *     marked bubble within the photo, for drawing an overlay on the image
+ *     itself. Included for any question with a detected mark (confident,
+ *     multi, or low-confidence) — omitted for genuinely blank questions.
  * `responses` only includes questions the detector is reasonably confident
  * about (or clearly multi-marked); everything else the caller should treat
  * as blank until the person reviews it.
@@ -172,7 +168,7 @@ export async function detectResponsesFromImage(imgEl) {
     gray.delete();
     if (working !== gray) working.delete();
     src.delete();
-    return { responses: {}, lowConfidence: [], warning: 'not_enough_marks' };
+    return { responses: {}, lowConfidence: [], multiMarked: [], positions: {}, grid: null, warning: 'not_enough_marks' };
   }
 
   // --- Fit the row grid (shared across all 4 blocks) ---
@@ -221,7 +217,7 @@ export async function detectResponsesFromImage(imgEl) {
   src.delete();
 
   if (!rowFit || blockStartEstimates.length < 2 || pitchSamples.length === 0) {
-    return { responses: {}, lowConfidence: [], warning: 'grid_fit_failed' };
+    return { responses: {}, lowConfidence: [], multiMarked: [], positions: {}, grid: null, warning: 'grid_fit_failed' };
   }
 
   const optionPitch = pitchSamples.reduce((a, b) => a + b, 0) / pitchSamples.length;
@@ -246,33 +242,41 @@ export async function detectResponsesFromImage(imgEl) {
   const responses = {};
   const lowConfidence = [];
   const multiMarked = [];
-  const FILLED_THRESHOLD = 70; // empirically: blank ~15-30, filled ~190-230
+  const positions = {};
 
   for (let b = 0; b < BLOCKS.length; b++) {
     for (let r = 0; r < ROWS_PER_BLOCK; r++) {
       const qno = String(BLOCKS[b].startQ + r);
       const cy = rowFit.start + r * rowFit.pitch;
       const darkness = [];
+      const xPositions = [];
       for (let o = 0; o < OPTIONS_PER_ROW; o++) {
         const cx = blockXStart[b] + o * optionPitch;
+        xPositions.push(cx);
         const mean = meanGrayAt(sampleMat, cv, cx, cy, sampleRadius);
         darkness.push(255 - mean); // higher = darker/more filled
       }
-      const filledOptions = darkness.reduce((count, d) => count + (d > FILLED_THRESHOLD ? 1 : 0), 0);
+      const filledIdx = darkness.reduce((idxs, d, i) => (d > FILLED_THRESHOLD ? [...idxs, i] : idxs), []);
 
-      if (filledOptions === 1) {
-        const idx = darkness.indexOf(Math.max(...darkness));
-        responses[qno] = String(idx + 1);
-      } else if (filledOptions >= 2) {
+      if (filledIdx.length === 1) {
+        responses[qno] = String(filledIdx[0] + 1);
+        positions[qno] = { fx: xPositions[filledIdx[0]] / w, fy: cy / h };
+      } else if (filledIdx.length >= 2) {
         // Two or more bubbles darkened for the same question — NTA scores
         // this as incorrect outright, never blank, regardless of whether
         // one of the marks happens to be right.
         responses[qno] = MULTI_MARKED;
         multiMarked.push(qno);
-      } else if (Math.max(...darkness) > FILLED_THRESHOLD * 0.6) {
-        // Something faint was marked but not confidently — flag for
-        // review, leave unanswered so it doesn't silently misscore.
-        lowConfidence.push(qno);
+        const midX = filledIdx.reduce((sum, i) => sum + xPositions[i], 0) / filledIdx.length;
+        positions[qno] = { fx: midX / w, fy: cy / h };
+      } else {
+        const maxD = Math.max(...darkness);
+        if (maxD > FILLED_THRESHOLD * LOW_CONFIDENCE_RATIO) {
+          // Something faint was marked but not confidently — flag for
+          // review, leave unanswered so it doesn't silently misscore.
+          lowConfidence.push(qno);
+          positions[qno] = { fx: xPositions[darkness.indexOf(maxD)] / w, fy: cy / h };
+        }
       }
     }
   }
@@ -281,7 +285,14 @@ export async function detectResponsesFromImage(imgEl) {
   srcFull.delete();
   if (sampleMat !== grayFull) sampleMat.delete();
 
-  return { responses, lowConfidence, multiMarked };
+  const grid = {
+    rowStartFrac: rowFit.start / h,
+    rowPitchFrac: rowFit.pitch / h,
+    blockXStartFrac: blockXStart.map((x) => x / w),
+    optionPitchFrac: optionPitch / w,
+  };
+
+  return { responses, lowConfidence, multiMarked, positions, grid };
 }
 
 function meanGrayAt(mat, cv, cx, cy, radius) {
@@ -295,5 +306,3 @@ function meanGrayAt(mat, cv, cx, cy, radius) {
   roi.delete();
   return mean;
 }
-
-export const TOTAL_QUESTIONS = BLOCKS.length * ROWS_PER_BLOCK;

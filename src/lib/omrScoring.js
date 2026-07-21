@@ -39,6 +39,20 @@ export function parseResponseCsv(text) {
 }
 
 /**
+ * Classifies a single response against its accepted answer(s). Returns
+ * 'correct' | 'incorrect' | 'blank' | 'dropped' | 'multi'. Shared by
+ * scoreResponses (for the aggregate tally) and the photo-review overlay
+ * (for per-question dot coloring), so the two never disagree about what
+ * counts as right.
+ */
+export function classifyAnswer(given, accepted) {
+  if (given === DROPPED) return 'dropped';
+  if (given === MULTI_MARKED) return 'multi';
+  if (!given) return 'blank';
+  return (accepted || []).includes(given) ? 'correct' : 'incorrect';
+}
+
+/**
  * Scores a parsed response map against an answer_keys row's `key` jsonb
  * ({ [qno]: string[] of accepted options }), using that row's marking
  * scheme. Handles multi-correct questions (any accepted option scores full
@@ -61,25 +75,12 @@ export function scoreResponses(responses, answerKey) {
   const allQuestions = Object.keys(key).sort((a, b) => Number(a) - Number(b));
 
   for (const qno of allQuestions) {
-    const given = responses[qno];
-    const accepted = key[qno] || [];
-
-    if (given === DROPPED) {
-      dropped += 1;
-      continue;
-    }
-    if (given === MULTI_MARKED) {
-      incorrect += 1;
-      incorrectQuestions.push(qno);
-      continue;
-    }
-    if (!given) {
-      blank += 1;
-      continue;
-    }
-    if (accepted.includes(given)) {
-      correct += 1;
-    } else {
+    const outcome = classifyAnswer(responses[qno], key[qno]);
+    if (outcome === 'dropped') dropped += 1;
+    else if (outcome === 'blank') blank += 1;
+    else if (outcome === 'correct') correct += 1;
+    else {
+      // 'incorrect' or 'multi' — both score as wrong
       incorrect += 1;
       incorrectQuestions.push(qno);
     }
