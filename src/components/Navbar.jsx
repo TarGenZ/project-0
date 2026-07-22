@@ -128,7 +128,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-2">
             <button
               onClick={toggle}
               aria-label="Toggle theme"
