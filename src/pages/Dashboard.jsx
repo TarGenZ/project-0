@@ -13,6 +13,10 @@ import AdminFreeResources from '../components/dashboard/AdminFreeResources.jsx';
 import AdminAnswerKeys from '../components/dashboard/AdminAnswerKeys.jsx';
 import AdminBlockedSlots from '../components/dashboard/AdminBlockedSlots.jsx';
 import AdminAllPurchases from '../components/dashboard/AdminAllPurchases.jsx';
+import AdminCutoffColleges from '../components/dashboard/AdminCutoffColleges.jsx';
+import AdminCutoffQuotas from '../components/dashboard/AdminCutoffQuotas.jsx';
+import AdminCutoffData from '../components/dashboard/AdminCutoffData.jsx';
+import AdminCutoffImport from '../components/dashboard/AdminCutoffImport.jsx';
 import OnboardingModal from '../components/dashboard/OnboardingModal.jsx';
 import SEO from '../components/SEO.jsx';
 
@@ -65,6 +69,15 @@ const ADMIN_TAB_GROUPS = [
   {
     group: 'Tools',
     tabs: [{ id: 'tools_answer_keys', label: 'Answer Keys', Component: AdminAnswerKeys }],
+  },
+  {
+    group: 'Cutoffs',
+    tabs: [
+      { id: 'cutoffs_colleges', label: 'Colleges',    Component: AdminCutoffColleges },
+      { id: 'cutoffs_quotas',   label: 'Quotas',      Component: AdminCutoffQuotas   },
+      { id: 'cutoffs_data',     label: 'Cutoff Data', Component: AdminCutoffData     },
+      { id: 'cutoffs_import',   label: 'Bulk Import', Component: AdminCutoffImport   },
+    ],
   },
 ];
 

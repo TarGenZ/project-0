@@ -1,17 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Sun, Moon } from 'lucide-react';
 import AuthButton from './AuthButton.jsx';
 import ComingSoonModal from './ComingSoonModal.jsx';
+import { useTheme } from '../contexts/ThemeContext.jsx';
 
+// Apps that are live — render as direct links.
+// Apps that are still being built — keep in SUBDOMAIN_APPS (triggers ComingSoonModal).
 export const SUBDOMAIN_APPS = [
-  {
-    id: 'cutoffs',
-    name: 'Cutoffs',
-    subdomain: 'cutoffs.arpansarkar.org',
-    blurb: 'College-wise NEET cutoffs and rank predictions, kept current every counselling round.',
-  },
   {
     id: 'counselling',
     name: 'Counselling',
@@ -35,6 +32,7 @@ export default function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
   const toolsRef = useRef(null);
+  const { isDark, toggle } = useTheme();
 
   const openApp = (app) => {
     setMobileOpen(false);
@@ -71,6 +69,12 @@ export default function Navbar() {
               className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
             >
               Resources
+            </a>
+            <a
+              href="https://cutoffs.arpansarkar.org"
+              className="rounded-full px-3.5 py-2 text-sm text-white/70 transition hover:bg-panel hover:text-white"
+            >
+              Cutoffs
             </a>
             {SUBDOMAIN_APPS.map((app) => (
               <button
@@ -125,6 +129,13 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:block">
+            <button
+              onClick={toggle}
+              aria-label="Toggle theme"
+              className="rounded-full border border-line/60 p-2 text-white/50 transition hover:border-violet/40 hover:text-white"
+            >
+              {isDark ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
             <AuthButton />
           </div>
 
@@ -167,6 +178,12 @@ export default function Navbar() {
                 className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
               >
                 Resources
+              </a>
+              <a
+                href="https://cutoffs.arpansarkar.org"
+                className="rounded-lg px-3 py-2.5 text-left text-sm text-white/70 hover:bg-panel hover:text-white"
+              >
+                Cutoffs
               </a>
               {SUBDOMAIN_APPS.map((app) => (
                 <button
