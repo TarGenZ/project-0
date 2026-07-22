@@ -29,7 +29,7 @@ const PILLARS = [
 
 export default function Pillars() {
   return (
-    <section id="pillars" className="border-t border-line/70 px-5 py-20 md:py-28">
+    <section id="pillars" className="border-t border-line/70 px-4 py-14 sm:px-5 md:py-28">
       <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 12 }}

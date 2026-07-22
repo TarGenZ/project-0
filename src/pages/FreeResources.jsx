@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ExternalLink, Search, FileText } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import SEO from '../components/SEO.jsx';
@@ -15,9 +16,11 @@ const CLASS_LABELS = { all: 'All years', '11th': 'Class 11', '12th': 'Class 12',
  * behind a paywall would.
  */
 export default function FreeResources() {
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  // Pre-fill from ?q= param so the navbar search bar can route here
+  const [search, setSearch] = useState(() => searchParams.get('q') || '');
 
   useEffect(() => {
     supabase

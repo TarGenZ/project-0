@@ -3,7 +3,7 @@ import ResultCard from './ResultCard.jsx';
 
 export default function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden px-5 pt-16 pb-20 md:pt-24 md:pb-28">
+    <section id="top" className="relative overflow-hidden px-4 pt-12 pb-16 sm:px-5 md:pt-24 md:pb-28">
       <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -28,7 +28,7 @@ export default function Hero() {
             doesn't leave you guessing on results day.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center gap-3 sm:flex-nowrap">
             <a
               href="#pillars"
               className="rounded-full bg-amber px-6 py-3 text-sm font-semibold text-base shadow-amberGlow transition hover:brightness-110"
@@ -43,7 +43,7 @@ export default function Hero() {
             </a>
           </div>
 
-          <div className="mt-10 flex gap-8 text-sm">
+          <div className="mt-10 flex flex-wrap gap-6 text-sm sm:gap-8">
             <div>
               <p className="font-display text-2xl font-bold text-white">100%</p>
               <p className="text-white/45">self-funded journey</p>
