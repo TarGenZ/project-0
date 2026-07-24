@@ -18,14 +18,12 @@ export const SUBDOMAIN_APPS = [
   { id: 'counselling', name: 'Counselling', subdomain: 'counselling.arpansarkar.org', blurb: 'Round-by-round seat allotment guidance so a choice-filling mistake does not cost a year.' },
 ];
 
-// Plans sub-items — comingSoon items open a modal; others are router Links
 export const PLANS_ITEMS = [
   { id: 'mentorship',       name: 'Mentorship',       path: '/plans?category=mentorship', blurb: '1-on-1 sessions and personalised study plans' },
   { id: 'college-database', name: 'College Database', comingSoon: true, subdomain: 'collegedatabase.arpansarkar.org', blurb: 'Browse NEET colleges, seats, and historical cutoffs in one place.' },
   { id: 'resources',        name: 'Resources',        path: '/plans?category=resources',  blurb: 'Notes, revision sheets and curated question banks' },
 ];
 
-// Tools — comingSoon items open a modal; others are router Links
 export const TOOLS = [
   { id: 'syllabus-tracker',          name: 'Syllabus Tracker',            comingSoon: true, subdomain: 'tools.arpansarkar.org', blurb: 'Track your chapter-wise NEET progress and revision schedule.' },
   { id: 'reneet-marks-calculator',   name: 'ReNEET 2026 Calculator',      path: '/tools/neet-marks-calculator', blurb: 'Estimate your rank from raw marks instantly' },
@@ -42,36 +40,45 @@ const SOON_BADGE = (
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Navbar() {
-  // Which desktop dropdown is currently open: 'apps' | 'plans' | 'tools' | null
-  const [openMenu,     setOpenMenu]     = useState(null);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  // Mobile accordion: which section is expanded
-  const [mobileSection, setMobileSection] = useState(null); // 'apps'|'plans'|'tools'
-  const [searchOpen,   setSearchOpen]   = useState(false);
-  const [searchQuery,  setSearchQuery]  = useState('');
-  const [activeModal,  setActiveModal]  = useState(null);
+  const [openMenu,      setOpenMenu]      = useState(null);
+  const [mobileOpen,    setMobileOpen]    = useState(false);
+  const [mobileSection, setMobileSection] = useState(null);
+  const [searchOpen,    setSearchOpen]    = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [activeModal,   setActiveModal]   = useState(null);
+  const [headerH,       setHeaderH]       = useState(57); // measured height of the sticky header
 
-  const hoverTimer    = useRef(null);
-  const searchRef     = useRef(null);
+  const hoverTimer     = useRef(null);
+  const searchRef      = useRef(null);
   const searchInputRef = useRef(null);
+  const headerRef      = useRef(null);
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
 
+  // ── Measure header height so the overlay snaps flush below it ─────────────
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      // +1 for the border-b pixel
+      setHeaderH(Math.round(entry.contentRect.height) + 1);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // ── Lock body scroll while the mobile overlay is open ─────────────────────
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   // ── Hover helpers ─────────────────────────────────────────────────────────
-  const menuEnter = (key) => {
-    clearTimeout(hoverTimer.current);
-    setOpenMenu(key);
-  };
-  const menuLeave = () => {
-    hoverTimer.current = setTimeout(() => setOpenMenu(null), 90);
-  };
+  const menuEnter = (key) => { clearTimeout(hoverTimer.current); setOpenMenu(key); };
+  const menuLeave = () => { hoverTimer.current = setTimeout(() => setOpenMenu(null), 90); };
 
   // ── Coming-soon modal ─────────────────────────────────────────────────────
-  const openModal = (item) => {
-    setMobileOpen(false);
-    setOpenMenu(null);
-    setActiveModal(item);
-  };
+  const openModal = (item) => { setMobileOpen(false); setOpenMenu(null); setActiveModal(item); };
 
   // ── Close search on outside click ─────────────────────────────────────────
   useEffect(() => {
@@ -92,10 +99,7 @@ export default function Navbar() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  useEffect(() => {
-    if (searchOpen) searchInputRef.current?.focus();
-  }, [searchOpen]);
-
+  useEffect(() => { if (searchOpen) searchInputRef.current?.focus(); }, [searchOpen]);
   useEffect(() => () => clearTimeout(hoverTimer.current), []);
 
   // ── Search submit ─────────────────────────────────────────────────────────
@@ -112,13 +116,11 @@ export default function Navbar() {
   const closeNav = () => setMobileOpen(false);
 
   // ── Reusable: render a dropdown item ─────────────────────────────────────
-  const renderDropdownItem = (item, closeKey) => {
+  const renderDropdownItem = (item) => {
     if (item.comingSoon) {
       return (
         <button key={item.id} onClick={() => openModal(item)} className={DD_ITEM}>
-          <span className="flex items-center gap-2 font-medium text-white/85">
-            {item.name} {SOON_BADGE}
-          </span>
+          <span className="flex items-center gap-2 font-medium text-white/85">{item.name} {SOON_BADGE}</span>
           <span className="line-clamp-2 text-xs text-white/40">{item.blurb}</span>
         </button>
       );
@@ -126,9 +128,7 @@ export default function Navbar() {
     if (item.href) {
       return (
         <a key={item.id} href={item.href} target="_blank" rel="noopener noreferrer"
-          onClick={() => setOpenMenu(null)}
-          className={DD_ITEM}
-        >
+          onClick={() => setOpenMenu(null)} className={DD_ITEM}>
           <span className="flex items-center gap-1.5 font-medium text-white/85">
             {item.name} <ExternalLink size={11} className="text-white/30" />
           </span>
@@ -144,13 +144,9 @@ export default function Navbar() {
     );
   };
 
-  // ── Dropdown wrapper (hover-triggered on desktop) ─────────────────────────
+  // ── Desktop dropdown ──────────────────────────────────────────────────────
   const DropdownMenu = ({ id, label, items }) => (
-    <div
-      className="relative"
-      onMouseEnter={() => menuEnter(id)}
-      onMouseLeave={menuLeave}
-    >
+    <div className="relative" onMouseEnter={() => menuEnter(id)} onMouseLeave={menuLeave}>
       <button
         aria-expanded={openMenu === id}
         className="flex items-center gap-1 rounded-full px-3.5 py-2 text-sm text-white/70 transition-colors hover:bg-panel hover:text-white"
@@ -158,20 +154,11 @@ export default function Navbar() {
         {label}
         <ChevronDown size={13} className={`transition-transform duration-200 ${openMenu === id ? 'rotate-180' : ''}`} />
       </button>
-
       <AnimatePresence>
         {openMenu === id && (
-          <motion.div
-            key={id}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.13 }}
-            className={DD_WRAP}
-          >
-            <div className="p-1.5">
-              {items.map((item) => renderDropdownItem(item))}
-            </div>
+          <motion.div key={id} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.13 }} className={DD_WRAP}>
+            <div className="p-1.5">{items.map((item) => renderDropdownItem(item))}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -192,13 +179,8 @@ export default function Navbar() {
         </button>
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              className="overflow-hidden"
-            >
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} className="overflow-hidden">
               <div className="ml-2 border-l border-line/50 pl-3 pb-1">{children}</div>
             </motion.div>
           )}
@@ -210,7 +192,8 @@ export default function Navbar() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line/70 bg-base/85 backdrop-blur-md">
+      {/* Sticky header — ref'd so we can measure its height */}
+      <header ref={headerRef} className="sticky top-0 z-40 border-b border-line/70 bg-base/85 backdrop-blur-md">
         <nav className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-5">
 
           {/* Logo */}
@@ -223,64 +206,43 @@ export default function Navbar() {
             <DropdownMenu id="apps"  label="Apps"   items={[...LIVE_APPS, ...SUBDOMAIN_APPS]} />
             <DropdownMenu id="plans" label="Plans"  items={PLANS_ITEMS} />
             <DropdownMenu id="tools" label="Tools"  items={TOOLS} />
-            <Link
-              to="/free-resources"
-              className="rounded-full px-3.5 py-2 text-sm text-white/70 transition-colors hover:bg-panel hover:text-white"
-            >
+            <Link to="/free-resources"
+              className="rounded-full px-3.5 py-2 text-sm text-white/70 transition-colors hover:bg-panel hover:text-white">
               Free Resources
             </Link>
           </div>
 
           {/* Desktop right: search + theme + auth */}
           <div className="ml-auto hidden items-center gap-2 md:flex">
-            {/* Expandable search */}
             <div ref={searchRef} className="relative flex items-center">
               <AnimatePresence mode="wait">
                 {searchOpen ? (
-                  <motion.form
-                    key="open"
-                    onSubmit={handleSearch}
-                    initial={{ width: 36, opacity: 0.4 }}
-                    animate={{ width: 216, opacity: 1 }}
-                    exit={{ width: 36, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
-                    className="flex items-center gap-2 overflow-hidden rounded-full border border-violet/40 bg-panel px-3 py-1.5"
-                  >
+                  <motion.form key="open" onSubmit={handleSearch}
+                    initial={{ width: 36, opacity: 0.4 }} animate={{ width: 216, opacity: 1 }}
+                    exit={{ width: 36, opacity: 0 }} transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    className="flex items-center gap-2 overflow-hidden rounded-full border border-violet/40 bg-panel px-3 py-1.5">
                     <Search size={14} className="flex-shrink-0 text-white/40" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search resources…"
-                      className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
-                    />
+                    <input ref={searchInputRef} type="text" value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search resources…"
+                      className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30" />
                     <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
                       className="flex-shrink-0 text-white/30 transition hover:text-white/70">
                       <X size={13} />
                     </button>
                   </motion.form>
                 ) : (
-                  <motion.button
-                    key="icon"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => setSearchOpen(true)}
-                    aria-label="Search"
-                    className="rounded-full border border-line/60 p-2 text-white/50 transition hover:border-violet/40 hover:text-white"
-                  >
+                  <motion.button key="icon" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    onClick={() => setSearchOpen(true)} aria-label="Search"
+                    className="rounded-full border border-line/60 p-2 text-white/50 transition hover:border-violet/40 hover:text-white">
                     <Search size={15} />
                   </motion.button>
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Theme toggle */}
             <button onClick={toggle} aria-label="Toggle theme"
               className="rounded-full border border-line/60 p-2 text-white/50 transition hover:border-violet/40 hover:text-white">
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
-
             <AuthButton />
           </div>
 
@@ -304,18 +266,45 @@ export default function Navbar() {
             </button>
           </div>
         </nav>
+      </header>
 
-        {/* Mobile drawer */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              key="drawer"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22, ease: 'easeInOut' }}
-              className="overflow-hidden border-t border-line/70 bg-base md:hidden"
-            >
+      {/* ── Mobile: blurred backdrop — sits below the header, covers the page ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mob-backdrop"
+            className="fixed inset-0 z-30 md:hidden"
+            style={{ top: headerH }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={closeNav}
+            aria-hidden="true"
+          >
+            {/* Two-layer effect: strong blur + dark tint */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Mobile: frosted panel — slides down flush from the header ─────── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mob-panel"
+            className="fixed left-0 right-0 z-40 md:hidden overflow-y-auto overscroll-contain"
+            style={{
+              top: headerH,
+              maxHeight: `calc(100dvh - ${headerH}px)`,
+            }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Frosted glass panel */}
+            <div className="bg-base/[0.96] backdrop-blur-2xl border-b border-line/50 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.85)]">
               <div className="px-4 pb-6 pt-3">
 
                 {/* Search */}
@@ -340,6 +329,7 @@ export default function Navbar() {
                 <MobileSection sectionKey="apps" label="Apps">
                   {LIVE_APPS.map((app) => (
                     <a key={app.id} href={app.href} target="_blank" rel="noopener noreferrer"
+                      onClick={closeNav}
                       className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-white/65 transition hover:bg-panel hover:text-white">
                       {app.name}
                       <ExternalLink size={12} className="text-white/30" />
@@ -396,11 +386,12 @@ export default function Navbar() {
                 <div className="mt-3 border-t border-line/70 pt-4">
                   <AuthButton className="w-full justify-center" />
                 </div>
+
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ComingSoonModal app={activeModal} onClose={() => setActiveModal(null)} />
     </>
