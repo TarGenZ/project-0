@@ -5,19 +5,19 @@ const PILLARS = [
     tag: 'SECTION A',
     title: 'Mentorship',
     desc: 'Direct 1:1 and small-group sessions with me. Study plans, doubt-clearing, and the honest "is this realistic for you" conversations no one else will have.',
-    status: 'Live via personal booking — subdomain launching soon',
+    status: 'Live',
   },
   {
     tag: 'SECTION B',
     title: 'Resources',
     desc: 'The notes, revision sheets and question banks I actually used, organized by chapter and weightage instead of dumped in a folder.',
-    status: 'In progress',
+    status: 'Live',
   },
   {
     tag: 'SECTION C',
     title: 'Cutoffs',
     desc: 'College-wise NEET cutoffs and rank-to-college mapping, updated every counselling round instead of left stale from last year.',
-    status: 'In progress',
+    status: 'Live',
   },
   {
     tag: 'SECTION D',
@@ -26,6 +26,11 @@ const PILLARS = [
     status: 'In progress',
   },
 ];
+
+const statusClass = (s) =>
+  s === 'Live'
+    ? 'rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] text-emerald-400'
+    : 'rounded-full border border-line px-2.5 py-0.5 text-[10px] text-white/40';
 
 export default function Pillars() {
   return (
@@ -60,7 +65,7 @@ export default function Pillars() {
                 <span className="font-display text-xs font-bold tracking-wider text-violet-soft">
                   {p.tag}
                 </span>
-                <span className="rounded-full border border-line px-2.5 py-0.5 text-[10px] text-white/40">
+                <span className={statusClass(p.status)}>
                   {p.status}
                 </span>
               </div>
