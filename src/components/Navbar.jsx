@@ -11,7 +11,7 @@ import { useTheme } from '../contexts/ThemeContext.jsx';
 export const LIVE_APPS = [
   { id: 'mentorship', name: 'Mentorship', href: 'https://mentorship.arpansarkar.org', blurb: '1-on-1 sessions, study plans, doubt clearing' },
   { id: 'resources',  name: 'Resources',  href: 'https://resources.arpansarkar.org',  blurb: 'Notes, revision sheets and question banks' },
-  { id: 'cutoffs',   name: 'Cutoffs',    href: 'https://cutoffs.arpansarkar.org',    blurb: 'College-wise cutoffs, updated every round' },
+  { id: 'cutoffs',   name: 'Cutoffs',    href: 'https://collegedatabase.arpansarkar.org',    blurb: 'College-wise cutoffs, updated every round' },
 ];
 
 export const SUBDOMAIN_APPS = [
@@ -21,7 +21,7 @@ export const SUBDOMAIN_APPS = [
 // Plans sub-items — comingSoon items open a modal; others are router Links
 export const PLANS_ITEMS = [
   { id: 'mentorship',       name: 'Mentorship',       path: '/plans?category=mentorship', blurb: '1-on-1 sessions and personalised study plans' },
-  { id: 'college-database', name: 'College Database', comingSoon: true, subdomain: 'cutoffs.arpansarkar.org', blurb: 'Browse NEET colleges, seats, and historical cutoffs in one place.' },
+  { id: 'college-database', name: 'College Database', comingSoon: true, subdomain: 'collegedatabase.arpansarkar.org', blurb: 'Browse NEET colleges, seats, and historical cutoffs in one place.' },
   { id: 'resources',        name: 'Resources',        path: '/plans?category=resources',  blurb: 'Notes, revision sheets and curated question banks' },
 ];
 
