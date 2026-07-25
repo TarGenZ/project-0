@@ -101,3 +101,13 @@ button:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Violet buttons must keep white text in light mode ───────────────────────
+   The global text-white → #0A0F1E remap must NOT fire when the element
+   (or its ancestor) carries a solid violet background — contrast is provided
+   by the button itself, not the page background.
+── */
+[data-theme="light"] .bg-violet.text-white,
+[data-theme="light"] .bg-violet .text-white,
+[data-theme="light"] .bg-violet-soft.text-white,
+[data-theme="light"] .bg-violet-soft .text-white { color: #fff; }
