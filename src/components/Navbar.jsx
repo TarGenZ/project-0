@@ -240,7 +240,7 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
             <button onClick={toggle} aria-label="Toggle theme"
-              className="rounded-full border border-line/60 p-2 text-white/50 transition hover:border-violet/40 hover:text-white">
+              className={`rounded-full border border-line/60 p-2 transition hover:border-violet/40 ${isDark ? 'text-white/50 hover:text-white' : 'text-[#0A0F1E]/60 hover:text-[#0A0F1E]'}`}>
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
             <AuthButton />
@@ -249,7 +249,7 @@ export default function Navbar() {
           {/* Mobile right: theme + hamburger */}
           <div className="ml-auto flex items-center gap-2 md:hidden">
             <button onClick={toggle} aria-label="Toggle theme"
-              className="rounded-full border border-line/60 p-1.5 text-white/50 transition hover:text-white">
+              className={`rounded-full border border-line/60 p-1.5 transition ${isDark ? 'text-white/50 hover:text-white' : 'text-[#0A0F1E]/60 hover:text-[#0A0F1E]'}`}>
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
             <button
