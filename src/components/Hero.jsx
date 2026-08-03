@@ -4,7 +4,7 @@ import ResultCard from './ResultCard.jsx';
 export default function Hero() {
   return (
     <section id="top" className="relative overflow-hidden px-4 pt-12 pb-16 sm:px-5 md:pt-24 md:pb-28">
-      <div className="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
+      <div className="mx-auto grid max-w-page items-center gap-14 md:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}

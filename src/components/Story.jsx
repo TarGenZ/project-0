@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 export default function Story() {
   return (
     <section id="story" className="border-t border-line/70 px-4 py-14 sm:px-5 md:py-28">
-      <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
+      <div className="mx-auto grid max-w-page gap-12 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
         <motion.div
           initial={{ opacity: 0, x: -16 }}
           whileInView={{ opacity: 1, x: 0 }}
