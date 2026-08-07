@@ -6,7 +6,7 @@ import { useAuth } from '../auth/useAuth';
 const BTN =
   'flex items-center gap-2 rounded-full border border-line bg-panel px-3.5 py-1.5 text-sm text-white/70 transition hover:border-violet/50 hover:text-white';
 
-export default function AuthButton({ className = '' }) {
+export default function AuthButton({ className = '', onSignIn }) {
   const { loading, isAuthenticated, user, signOut } = useAuth();
 
   if (loading) {
@@ -40,12 +40,13 @@ export default function AuthButton({ className = '' }) {
 
   return (
     <div className={`flex ${className}`}>
-      <Link
-        to="/signup"
+      <button
+        type="button"
+        onClick={onSignIn}
         className="rounded-full bg-violet px-5 py-2 text-sm font-semibold text-[#fff] transition hover:bg-violet-soft"
       >
         Register/Sign In
-      </Link>
+      </button>
     </div>
   );
 }

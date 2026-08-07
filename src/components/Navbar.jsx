@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Sun, Moon, Search, X, ExternalLink, Clock } from 'lucide-react';
 import AuthButton from './AuthButton.jsx';
+import AuthModal from './AuthModal.jsx';
 import ComingSoonModal from './ComingSoonModal.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 
@@ -46,6 +47,7 @@ export default function Navbar() {
   const [searchOpen,    setSearchOpen]    = useState(false);
   const [searchQuery,   setSearchQuery]   = useState('');
   const [activeModal,   setActiveModal]   = useState(null);
+  const [authModal,     setAuthModal]     = useState(null); // 'login' | 'signup' | null
   const [headerH,       setHeaderH]       = useState(57); // measured height of the sticky header
 
   const hoverTimer     = useRef(null);
@@ -79,6 +81,9 @@ export default function Navbar() {
 
   // ── Coming-soon modal ─────────────────────────────────────────────────────
   const openModal = (item) => { setMobileOpen(false); setOpenMenu(null); setActiveModal(item); };
+
+  // ── Auth modal ────────────────────────────────────────────────────────────
+  const openAuth = () => { setMobileOpen(false); setAuthModal('signup'); };
 
   // ── Close search on outside click ─────────────────────────────────────────
   useEffect(() => {
@@ -243,7 +248,7 @@ export default function Navbar() {
               className={`rounded-full border border-line/60 p-2 transition hover:border-violet/40 ${isDark ? 'text-white/50 hover:text-white' : 'text-[#0A0F1E]/60 hover:text-[#0A0F1E]'}`}>
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
-            <AuthButton />
+            <AuthButton onSignIn={openAuth} />
           </div>
 
           {/* Mobile right: theme + hamburger */}
@@ -384,7 +389,7 @@ export default function Navbar() {
 
                 {/* Auth */}
                 <div className="mt-3 border-t border-line/70 pt-4">
-                  <AuthButton className="w-full justify-center" />
+                  <AuthButton className="w-full justify-center" onSignIn={openAuth} />
                 </div>
 
               </div>
@@ -394,6 +399,9 @@ export default function Navbar() {
       </AnimatePresence>
 
       <ComingSoonModal app={activeModal} onClose={() => setActiveModal(null)} />
+      {authModal && (
+        <AuthModal initialStep={authModal} onClose={() => setAuthModal(null)} />
+      )}
     </>
   );
 }
