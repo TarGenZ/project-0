@@ -44,7 +44,7 @@ export default function AuthButton({ className = '' }) {
         to="/signup"
         className="rounded-full bg-violet px-5 py-2 text-sm font-semibold text-[#fff] transition hover:bg-violet-soft"
       >
-        JOIN US!
+        Register/Sign In
       </Link>
     </div>
   );
