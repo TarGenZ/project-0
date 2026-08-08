@@ -4,67 +4,79 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Search console verification — usually unnecessary here: verifying
-         arpansarkar.org as a "Domain" property in Google Search Console via
-         one DNS TXT record covers every *.arpansarkar.org subdomain at once.
-         Uncomment only if this subdomain needs to be verified individually.
+    <!-- Search console verification — only needed if you verify this exact
+         subdomain via meta tag. Prefer verifying arpansarkar.org as a
+         "Domain" property in Google Search Console via one DNS TXT record —
+         that covers every *.arpansarkar.org subdomain at once, no per-site
+         meta tag needed. Bing Webmaster Tools can then import straight from
+         GSC. Use the tags below only for a site you must verify individually.
     <meta name="google-site-verification" content="PASTE_CODE_HERE" />
     <meta name="msvalidate.01" content="PASTE_CODE_HERE" />
     -->
 
     <!-- Primary SEO -->
-    <title>Cutoffs — MBBS College Database & NEET Cutoffs | arpansarkar.org</title>
+    <title>Arpan Sarkar — NEET Mentorship, Resources & Counselling</title>
     <meta
       name="description"
-      content="Browse 600+ MBBS colleges with real NEET cutoff data across every quota and round. Transparent 10-parameter ratings — location, fees, faculty, hostel and more — so you can choose the right college with confidence."
+      content="Arpan Sarkar qualified NEET 2026 and is now in MBBS. Get 1:1 mentorship, study resources, NEET college cutoffs, and counselling guidance — built by someone who was in your seat one year ago."
     />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://collegedatabase.arpansarkar.org/" />
+    <link rel="canonical" href="https://arpansarkar.org/" />
     <meta name="author" content="Arpan Sarkar" />
     <meta name="theme-color" content="#0A0F1E" />
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Discord, etc.) -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="collegedatabase.arpansarkar.org" />
-    <meta property="og:title" content="Cutoffs — MBBS College Database & NEET Cutoffs" />
+    <meta property="og:site_name" content="arpansarkar.org" />
+    <meta property="og:title" content="Arpan Sarkar — NEET Mentorship, Resources & Counselling" />
     <meta
       property="og:description"
-      content="Browse 600+ MBBS colleges with real NEET cutoff data across every quota and round. Transparent ratings, no noise — just the data you need."
+      content="Arpan Sarkar qualified NEET 2026 and is now in MBBS. Mentorship, resources, cutoffs, and counselling for NEET aspirants — from someone one year ahead of you."
     />
-    <meta property="og:url" content="https://collegedatabase.arpansarkar.org/" />
-    <meta property="og:image" content="https://collegedatabase.arpansarkar.org/og-image.png" />
+    <meta property="og:url" content="https://arpansarkar.org/" />
+    <meta property="og:image" content="https://arpansarkar.org/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_IN" />
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Cutoffs — MBBS College Database & NEET Cutoffs" />
+    <meta name="twitter:title" content="Arpan Sarkar — NEET Mentorship, Resources & Counselling" />
     <meta
       name="twitter:description"
-      content="Browse 600+ MBBS colleges with real NEET cutoff data across every quota and round. Transparent ratings, no noise."
+      content="Arpan Sarkar qualified NEET 2026 and is now in MBBS. Mentorship, resources, cutoffs, and counselling for NEET aspirants."
     />
-    <meta name="twitter:image" content="https://collegedatabase.arpansarkar.org/og-image.png" />
+    <meta name="twitter:image" content="https://arpansarkar.org/og-image.png" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Favicons & app icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Fonts (also @imported in index.css — preconnect speeds up the first paint) -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <!-- Structured data: what this site is, and who runs it -->
+    <!-- Structured data: who Arpan is, and what this site offers -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Cutoffs",
-        "url": "https://collegedatabase.arpansarkar.org",
-        "description": "India's MBBS college database — browse colleges, ratings, and NEET cutoffs across every quota and round.",
-        "publisher": {
-          "@type": "Person",
-          "name": "Arpan Sarkar",
-          "url": "https://arpansarkar.org"
+        "@type": "Person",
+        "name": "Arpan Sarkar",
+        "url": "https://arpansarkar.org",
+        "jobTitle": "NEET Mentor & Medical Student",
+        "description": "Qualified NEET 2026, currently pursuing MBBS. Provides mentorship, resources, cutoff data, and counselling guidance to NEET aspirants.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mangaluru",
+          "addressRegion": "Karnataka",
+          "addressCountry": "IN"
         }
       }
     </script>
@@ -72,15 +84,21 @@
       {
         "@context": "https://schema.org",
         "@type": "EducationalOrganization",
-        "name": "Cutoffs — arpansarkar.org",
-        "url": "https://collegedatabase.arpansarkar.org",
-        "description": "MBBS college database and NEET cutoff tool, part of the arpansarkar.org network of tools for NEET aspirants.",
+        "name": "arpansarkar.org",
+        "url": "https://arpansarkar.org",
+        "logo": "https://arpansarkar.org/icon-512.png",
+        "description": "A network of tools for NEET aspirants: mentorship, resources, college cutoffs, and counselling guidance.",
         "founder": {
           "@type": "Person",
           "name": "Arpan Sarkar"
         },
         "areaServed": "IN",
-        "sameAs": ["https://arpansarkar.org"]
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mangaluru",
+          "addressRegion": "Karnataka",
+          "addressCountry": "IN"
+        }
       }
     </script>
   </head>

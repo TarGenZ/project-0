@@ -8,8 +8,6 @@ import CartDrawer from './components/plans/CartDrawer.jsx';
 // Everything else is code-split so first-time visitors don't pay for
 // dashboard/auth/legal-page code they may never touch — better Core Web
 // Vitals, which factors into search ranking.
-const Login = lazy(() => import('./auth/pages/Login.jsx'));
-const Signup = lazy(() => import('./auth/pages/Signup.jsx'));
 const ForgotPassword = lazy(() => import('./auth/pages/ForgotPassword.jsx'));
 const ResetPassword = lazy(() => import('./auth/pages/ResetPassword.jsx'));
 const AuthCallback = lazy(() => import('./auth/pages/AuthCallback.jsx'));
@@ -37,8 +35,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />

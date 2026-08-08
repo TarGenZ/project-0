@@ -84,7 +84,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <AuthLayout title="Reset your password" subtitle="We'll send a code to confirm it's you." backTo="/login">
+    <AuthLayout title="Reset your password" subtitle="We'll send a code to confirm it's you.">
       <SEO title="Reset your password — arpansarkar.org" path="/forgot-password" noindex />
       <form onSubmit={handleSendCode}>
         <input

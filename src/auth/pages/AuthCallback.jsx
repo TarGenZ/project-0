@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../useAuth';
+import { useAuthModal } from '../../contexts/AuthModalContext.jsx';
 import SEO from '../../components/SEO.jsx';
 
 const TIMEOUT_MS = 10000;
@@ -17,6 +18,7 @@ const TIMEOUT_MS = 10000;
 export default function AuthCallback() {
   const navigate = useNavigate();
   const { loading, isAuthenticated } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [timedOut, setTimedOut] = useState(false);
   const startRef = useRef(Date.now());
 
@@ -48,9 +50,13 @@ export default function AuthCallback() {
             <p className="text-white/60 text-sm">
               That took longer than expected — please try signing in again.
             </p>
-            <a href="/login" className="inline-block mt-6 text-amber underline underline-offset-4">
+            <button
+              type="button"
+              onClick={() => { navigate('/', { replace: true }); openAuthModal('login'); }}
+              className="inline-block mt-6 text-amber underline underline-offset-4"
+            >
               Back to login
-            </a>
+            </button>
           </>
         ) : (
           <>

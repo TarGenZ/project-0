@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Sun, Moon, Search, X, ExternalLink, Clock } from 'lucide-react';
 import AuthButton from './AuthButton.jsx';
-import AuthModal from './AuthModal.jsx';
 import ComingSoonModal from './ComingSoonModal.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
+import { useAuthModal } from '../contexts/AuthModalContext.jsx';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,6 @@ export default function Navbar() {
   const [searchOpen,    setSearchOpen]    = useState(false);
   const [searchQuery,   setSearchQuery]   = useState('');
   const [activeModal,   setActiveModal]   = useState(null);
-  const [authModal,     setAuthModal]     = useState(null); // 'login' | 'signup' | null
   const [headerH,       setHeaderH]       = useState(57); // measured height of the sticky header
 
   const hoverTimer     = useRef(null);
@@ -55,6 +54,7 @@ export default function Navbar() {
   const searchInputRef = useRef(null);
   const headerRef      = useRef(null);
   const { isDark, toggle } = useTheme();
+  const { openAuthModal } = useAuthModal();
   const navigate = useNavigate();
 
   // ── Measure header height so the overlay snaps flush below it ─────────────
@@ -83,7 +83,7 @@ export default function Navbar() {
   const openModal = (item) => { setMobileOpen(false); setOpenMenu(null); setActiveModal(item); };
 
   // ── Auth modal ────────────────────────────────────────────────────────────
-  const openAuth = () => { setMobileOpen(false); setAuthModal('signup'); };
+  const openAuth = () => { setMobileOpen(false); openAuthModal('signup'); };
 
   // ── Close search on outside click ─────────────────────────────────────────
   useEffect(() => {
@@ -399,9 +399,6 @@ export default function Navbar() {
       </AnimatePresence>
 
       <ComingSoonModal app={activeModal} onClose={() => setActiveModal(null)} />
-      {authModal && (
-        <AuthModal initialStep={authModal} onClose={() => setAuthModal(null)} />
-      )}
     </>
   );
 }

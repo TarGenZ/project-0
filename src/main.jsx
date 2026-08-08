@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
+import { AuthModalProvider } from './contexts/AuthModalContext.jsx';
 import AuthProvider from './auth/AuthProvider.jsx';
 import { CartProvider } from './lib/cart.jsx';
 import App from './App.jsx';
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <App />
+              <AuthModalProvider>
+                <App />
+              </AuthModalProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>

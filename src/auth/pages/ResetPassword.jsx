@@ -46,7 +46,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <AuthLayout title="Set a new password" subtitle="You'll be logged in right after this." backTo="/login">
+    <AuthLayout title="Set a new password" subtitle="You'll be logged in right after this.">
       <SEO title="Set a new password — arpansarkar.org" path="/reset-password" noindex />
       <form onSubmit={handleSubmit}>
         <PasswordField

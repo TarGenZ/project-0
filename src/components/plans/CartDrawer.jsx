@@ -3,18 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../lib/cart';
 import { useAuth } from '../../auth/useAuth';
+import { useAuthModal } from '../../contexts/AuthModalContext.jsx';
 import { runCheckout } from '../../lib/checkout';
 
 export default function CartDrawer() {
   const { items, removeItem, clear, total, open, setOpen } = useCart();
   const { session, isAuthenticated } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const handleCheckout = async () => {
     if (!isAuthenticated) {
-      window.location.href = `/login?next=${encodeURIComponent('/plans')}`;
+      setOpen(false);
+      openAuthModal('login');
       return;
     }
     setPaying(true);

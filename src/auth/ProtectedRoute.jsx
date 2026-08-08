@@ -1,4 +1,5 @@
 import { useAuth } from './useAuth';
+import { useAuthModal } from '../contexts/AuthModalContext.jsx';
 
 function FullScreenSpinner() {
   return (
@@ -9,12 +10,17 @@ function FullScreenSpinner() {
 }
 
 function SignInPrompt() {
+  const { openAuthModal } = useAuthModal();
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-base px-6 text-center">
       <p className="font-display text-xl text-white">Sign in to see this page</p>
-      <a href="/login" className="mt-4 text-amber underline underline-offset-4">
+      <button
+        type="button"
+        onClick={() => openAuthModal('login')}
+        className="mt-4 text-amber underline underline-offset-4"
+      >
         Sign in
-      </a>
+      </button>
     </div>
   );
 }
