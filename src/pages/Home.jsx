@@ -10,8 +10,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base">
       <SEO
-        title="Arpan Sarkar — NEET Mentorship, Resources & Counselling"
-        description="Arpan Sarkar qualified NEET 2026 and is now in MBBS. Get 1:1 mentorship, study resources, NEET college cutoffs, and counselling guidance — built by someone who was in your seat one year ago."
+        title="Arpan's Website"
+        description="Arpan Sarkar cracked NEET 2026 and is now studying MBBS. Get 1:1 mentorship, study resources, NEET college cutoffs, and counselling guidance — built by someone who was in your seat one year ago."
         path="/"
       />
       <Navbar />
