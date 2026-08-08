@@ -15,6 +15,14 @@ const INPUT = 'mt-1.5 w-full rounded-lg border border-line/40 bg-white/5 px-4 py
 const BTN_PRIMARY = 'mt-5 w-full rounded-full bg-violet py-2.5 text-sm font-semibold text-white transition hover:bg-violet-soft disabled:opacity-50';
 const LINK = 'text-amber underline underline-offset-4 hover:text-amber/80';
 
+// Guards against raw error bodies (e.g. a bare "{}") that some failure paths
+// (WAF blocks, malformed API responses) surface as err.message instead of
+// a real message — never show that to the user.
+const friendlyError = (err, fallback = 'Something went wrong. Please try again.') => {
+  const msg = err?.message;
+  return typeof msg === 'string' && msg.trim() && msg.trim() !== '{}' ? msg : fallback;
+};
+
 export default function AuthModal({ onClose, initialStep = 'login', next = '/dashboard' }) {
   const navigate = useNavigate();
   const captchaRef = useRef(null);
@@ -43,7 +51,7 @@ export default function AuthModal({ onClose, initialStep = 'login', next = '/das
       await signInWithPassword(email, password, captchaToken);
       finish();
     } catch (err) {
-      setError(err.message || 'Wrong email or password.');
+      setError(friendlyError(err, 'Wrong email or password.'));
       setShowForgot(true);
     } finally { setBusy(false); }
   };
@@ -55,7 +63,7 @@ export default function AuthModal({ onClose, initialStep = 'login', next = '/das
       const captchaToken = await captchaRef.current.getToken();
       await signInWithEmailOtp(email, { captchaToken, shouldCreateUser: false });
       setCodeContext('login-otp'); setCode(''); setStep('code');
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   };
 
   const handleForgotPassword = async () => {
@@ -65,7 +73,7 @@ export default function AuthModal({ onClose, initialStep = 'login', next = '/das
       const captchaToken = await captchaRef.current.getToken();
       await requestPasswordReset(email, captchaToken);
       setCodeContext('forgot'); setCode(''); setStep('code');
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   };
 
   const handleSignup = async (e) => {
@@ -75,7 +83,7 @@ export default function AuthModal({ onClose, initialStep = 'login', next = '/das
       const captchaToken = await captchaRef.current.getToken();
       await signUpWithPassword(email, password, { captchaToken, data: { full_name: name.trim() } });
       setCodeContext('signup'); setCode(''); setStep('code');
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(friendlyError(err)); } finally { setBusy(false); }
   };
 
   const handleVerifyCode = async (e) => {
@@ -95,7 +103,7 @@ export default function AuthModal({ onClose, initialStep = 'login', next = '/das
         onClose();
         navigate('/reset-password', { replace: true });
       }
-    } catch (err) { setError(err.message); setCode(''); } finally { setBusy(false); }
+    } catch (err) { setError(friendlyError(err)); setCode(''); } finally { setBusy(false); }
   };
 
   const ErrorBox = () => error && (

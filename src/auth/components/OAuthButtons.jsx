@@ -17,7 +17,8 @@ export default function OAuthButtons({ onError, next }) {
     try {
       await signInWithGoogle(next);
     } catch (err) {
-      onError?.(err.message);
+      const msg = err?.message;
+      onError?.(typeof msg === 'string' && msg.trim() && msg.trim() !== '{}' ? msg : 'Something went wrong. Please try again.');
     }
   };
 
